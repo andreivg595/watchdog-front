@@ -1,6 +1,26 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
-import L, { latLng, Layer, MapOptions, tileLayer, Control } from 'leaflet';
+import { select, Store } from '@ngrx/store';
+import { firstValueFrom, Subject, takeUntil } from 'rxjs';
+import L, {
+  latLng,
+  Layer,
+  MapOptions,
+  tileLayer,
+  Control,
+  Marker,
+  marker,
+} from 'leaflet';
+import { AppState } from '../../store/AppState';
+import { fetchPoints } from '../../store/points/point.actions';
+import { getPoints } from '../../store/points/point.selectors';
+import { Point } from '../../core/models/point.model';
 
 @Component({
   selector: 'app-map',
@@ -9,15 +29,40 @@ import L, { latLng, Layer, MapOptions, tileLayer, Control } from 'leaflet';
   templateUrl: './map.component.html',
   styleUrl: './map.component.scss',
 })
-export class MapComponent implements OnInit {
+export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+
+  private readonly store = inject(Store<AppState>);
+
+  readonly points$ = this.store.pipe(select(getPoints));
+
   map!: L.Map;
+
   options!: MapOptions;
+
+  markers: Marker[] = [];
+
   layers: Layer[] = [];
+
   layersControl!: Control.Layers;
 
   ngOnInit(): void {
+    this.store.dispatch(fetchPoints());
     this.initMapOptions();
     this.getUserLocation();
+  }
+
+  ngAfterViewInit(): void {
+    this.points$.pipe(takeUntil(this.destroy$)).subscribe((points: Point[]) => {
+      if (points.length > 0) {
+        this.initMarkers(points);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   initMapOptions(): void {
@@ -71,7 +116,17 @@ export class MapComponent implements OnInit {
     this.layersControl.addTo(this.map);
   }
 
-  getUserLocation() {
+  initMarkers(points: Point[]): void {
+    points.forEach((point: Point) => {
+      this.markers.push(
+        marker([point.latitude, point.longitude])
+          .addTo(this.map!)
+          .bindPopup(`<strong>${point.name}</strong><br/>${point.address}`)
+      );
+    });
+  }
+
+  getUserLocation(): void {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -95,10 +150,9 @@ export class MapComponent implements OnInit {
             fillColor: '#0000FF',
             fillOpacity: 1,
             radius: 8,
-          })
-            .addTo(this.map)
-            .bindPopup('Tu ubicación actual')
-            .openPopup();
+          }).addTo(this.map);
+          // .bindPopup('Tu ubicación actual')
+          // .openPopup();
 
           // this.map.setView(userCoords, 15);
         },

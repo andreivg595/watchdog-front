@@ -17,6 +17,7 @@ export class MapComponent implements OnInit {
 
   ngOnInit(): void {
     this.initMapOptions();
+    this.getUserLocation();
   }
 
   initMapOptions(): void {
@@ -68,5 +69,45 @@ export class MapComponent implements OnInit {
   onMapReady(map: L.Map): void {
     this.map = map;
     this.layersControl.addTo(this.map);
+  }
+
+  getUserLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userCoords = L.latLng(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+
+          const accuracyRadius = Math.min(position.coords.accuracy, 100);
+
+          const accuracyCircle = L.circle(userCoords, {
+            color: '#1E90FF',
+            fillColor: '#1E90FF',
+            fillOpacity: 0.2,
+            radius: accuracyRadius,
+          }).addTo(this.map);
+
+          const exactLocationMarker = L.circleMarker(userCoords, {
+            color: '#FFFFFF',
+            weight: 3,
+            fillColor: '#0000FF',
+            fillOpacity: 1,
+            radius: 8,
+          })
+            .addTo(this.map)
+            .bindPopup('Tu ubicación actual')
+            .openPopup();
+
+          // this.map.setView(userCoords, 15);
+        },
+        (error) => {
+          console.error('Error getting location', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
   }
 }

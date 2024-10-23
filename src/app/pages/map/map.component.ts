@@ -7,16 +7,9 @@ import {
 } from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { select, Store } from '@ngrx/store';
-import { firstValueFrom, Subject, takeUntil } from 'rxjs';
-import L, {
-  latLng,
-  Layer,
-  MapOptions,
-  tileLayer,
-  Control,
-  Marker,
-  marker,
-} from 'leaflet';
+import { Subject, takeUntil } from 'rxjs';
+import * as L from 'leaflet';
+import 'leaflet.markercluster';
 import { AppState } from '../../store/AppState';
 import { fetchPoints } from '../../store/points/point.actions';
 import { getPoints } from '../../store/points/point.selectors';
@@ -36,20 +29,73 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   readonly points$ = this.store.pipe(select(getPoints));
 
+  readonly primaryMap: L.TileLayer = L.tileLayer(
+    'https://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}',
+    {
+      attribution: 'Google',
+      maxZoom: 19,
+    }
+  );
+
+  readonly secondaryMap: L.TileLayer = L.tileLayer(
+    'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png',
+    {
+      attribution: 'Wikimedia',
+      maxZoom: 19,
+    }
+  );
+
+  readonly tertiaryMap: L.TileLayer = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }
+  );
+
+  readonly coordinatesBCN: L.LatLng = L.latLng(41.3851, 2.1734);
+
   map!: L.Map;
 
-  options!: MapOptions;
+  options: L.MapOptions = {
+    center: this.coordinatesBCN,
+    zoom: 13,
+    layers: [this.primaryMap],
+  };
 
-  markers: Marker[] = [];
+  layers: L.Layer[] = [this.primaryMap];
 
-  layers: Layer[] = [];
+  layersControl: L.Control.Layers = L.control.layers(
+    {
+      'Google Maps': this.primaryMap,
+      'Wikimedia Maps': this.secondaryMap,
+      OpenStreetMap: this.tertiaryMap,
+    },
+    {}
+  );
 
-  layersControl!: Control.Layers;
+  markersClusterGroup: L.MarkerClusterGroup = L.markerClusterGroup({
+    iconCreateFunction: (cluster) => {
+      const count = cluster.getChildCount();
+      const icon = L.divIcon({
+        html: `<div class="cluster-icon">
+                 <span>${count}</span>
+               </div>`,
+        iconSize: L.point(40, 40),
+      });
+      icon.options.className = 'leaflet-marker-icon cluster-marker';
+      return icon;
+    },
+  });
+  parkMarkers: L.Marker[] = [];
+  beachMarkers: L.Marker[] = [];
+  vetMarkers: L.Marker[] = [];
+  fountainMarkers: L.Marker[] = [];
+  allMarkers: L.Marker[] = [];
 
   ngOnInit(): void {
     this.store.dispatch(fetchPoints());
-    this.initMapOptions();
-    this.getUserLocation();
   }
 
   ngAfterViewInit(): void {
@@ -65,68 +111,64 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  initMapOptions(): void {
-    const primaryMap = tileLayer(
-      'https://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}',
-      {
-        attribution: 'Google',
-        maxZoom: 18,
-      }
-    );
-
-    const secondaryMap = tileLayer(
-      'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png',
-      {
-        attribution: 'Wikimedia',
-        maxZoom: 18,
-      }
-    );
-
-    const tertiaryMap = tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18,
-      }
-    );
-
-    const coordinatesBCN = latLng(41.3851, 2.1734);
-
-    this.options = {
-      center: coordinatesBCN,
-      zoom: 13,
-      layers: [primaryMap],
-    };
-
-    this.layersControl = L.control.layers(
-      {
-        'Google Maps': primaryMap,
-        'Wikimedia Maps': secondaryMap,
-        OpenStreetMap: tertiaryMap,
-      },
-      {}
-    );
-
-    this.layers = [primaryMap];
-  }
-
   onMapReady(map: L.Map): void {
     this.map = map;
     this.layersControl.addTo(this.map);
+    this.markersClusterGroup.addTo(this.map);
+    this.getUserLocation();
   }
 
-  initMarkers(points: Point[]): void {
+  private initMarkers(points: Point[]): void {
     points.forEach((point: Point) => {
-      this.markers.push(
-        marker([point.latitude, point.longitude])
-          .addTo(this.map!)
-          .bindPopup(`<strong>${point.name}</strong><br/>${point.address}`)
-      );
+      const iconUrl = this.getIconForPoint(point.type);
+      const customMarker = this.createCustomMarker(iconUrl, point.type);
+      const marker = L.marker([point.latitude, point.longitude], {
+        icon: customMarker,
+      });
+      const popupContent = `<strong>${point.name}</strong><br/>${point.address}`;
+      marker.bindPopup(popupContent);
+      this.markersClusterGroup.addLayer(marker);
     });
   }
 
-  getUserLocation(): void {
+  private createCustomMarker(iconUrl: string, pointType: string): L.DivIcon {
+    const pointTypeColors: { [key: string]: string } = {
+      park: 'rgba(23, 160, 10, 0.8)',
+      beach: 'rgba(215, 95, 5, 0.8)',
+      vet: 'rgba(225, 15, 35, 0.8)',
+      fountain: 'rgba(20, 100, 233, 0.8)',
+    };
+    const markerColor = pointTypeColors[pointType] || '#000';
+
+    return L.divIcon({
+      className: 'custom-map-marker',
+      html: `<div class="pin" style="background-color: ${markerColor}">
+               <div class="icon-container">
+                 <img src="${iconUrl}" class="marker-image" />
+               </div>
+             </div>`,
+      iconSize: [50, 70],
+      iconAnchor: [25, 70],
+      popupAnchor: [0, -70],
+    });
+  }
+
+  private getIconForPoint(pointType: string): string {
+    switch (pointType) {
+      case 'park':
+        return 'assets/images/dog.png';
+      case 'beach':
+        return 'assets/images/beach.png';
+      case 'vet':
+        return 'assets/images/vet.png';
+      case 'fountain':
+        return 'assets/images/water.png';
+      default:
+        return 'assets/default-icon.png';
+    }
+  }
+
+  private getUserLocation(): void {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {

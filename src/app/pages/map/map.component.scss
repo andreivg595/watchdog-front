@@ -1,3 +1,12 @@
+.menu {
+  display: inline-grid;
+  float: left;
+  position: absolute;
+  z-index: 1000;
+  bottom: 0;
+  padding: 10px;
+}
+
 ::ng-deep .leaflet-container {
   height: 100vh;
 }

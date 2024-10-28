@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { select, Store } from '@ngrx/store';
 import { Subject, takeUntil } from 'rxjs';
@@ -12,8 +6,9 @@ import * as L from 'leaflet';
 import 'leaflet.markercluster';
 import { AppState } from '../../store/AppState';
 import { fetchPoints } from '../../store/points/point.actions';
-import { getPoints } from '../../store/points/point.selectors';
+import { getPointsByType } from '../../store/points/point.selectors';
 import { Point } from '../../core/models/point.model';
+import { PointType } from '../../core/enums/point-type.enum';
 
 @Component({
   selector: 'app-map',
@@ -22,12 +17,10 @@ import { Point } from '../../core/models/point.model';
   templateUrl: './map.component.html',
   styleUrl: './map.component.scss',
 })
-export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
+export class MapComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   private readonly store = inject(Store<AppState>);
-
-  readonly points$ = this.store.pipe(select(getPoints));
 
   readonly primaryMap: L.TileLayer = L.tileLayer(
     'https://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}',
@@ -55,6 +48,21 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   );
 
   readonly coordinatesBCN: L.LatLng = L.latLng(41.3851, 2.1734);
+
+  readonly pointConfig = {
+    park: { color: 'rgba(23, 160, 10, 0.8)', iconUrl: 'assets/images/dog.png' },
+    beach: {
+      color: 'rgba(235, 95, 5, 0.8)',
+      iconUrl: 'assets/images/beach.png',
+    },
+    vet: { color: 'rgba(225, 15, 35, 0.8)', iconUrl: 'assets/images/vet.png' },
+    fountain: {
+      color: 'rgba(20, 100, 233, 0.8)',
+      iconUrl: 'assets/images/water.png',
+    },
+  } as const;
+
+  readonly pointType = PointType;
 
   map!: L.Map;
 
@@ -88,22 +96,10 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       return icon;
     },
   });
-  parkMarkers: L.Marker[] = [];
-  beachMarkers: L.Marker[] = [];
-  vetMarkers: L.Marker[] = [];
-  fountainMarkers: L.Marker[] = [];
-  allMarkers: L.Marker[] = [];
 
   ngOnInit(): void {
     this.store.dispatch(fetchPoints());
-  }
-
-  ngAfterViewInit(): void {
-    this.points$.pipe(takeUntil(this.destroy$)).subscribe((points: Point[]) => {
-      if (points.length > 0) {
-        this.initMarkers(points);
-      }
-    });
+    this.filterMarkers(this.pointType.PARK);
   }
 
   ngOnDestroy(): void {
@@ -118,33 +114,31 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.getUserLocation();
   }
 
+  filterMarkers(type: string) {
+    this.markersClusterGroup.clearLayers();
+    const points$ = this.store.pipe(
+      select(getPointsByType(type)),
+      takeUntil(this.destroy$)
+    );
+    points$.subscribe((points) => this.initMarkers(points));
+  }
+
   private initMarkers(points: Point[]): void {
     points.forEach((point: Point) => {
-      const iconUrl = this.getIconForPoint(point.type);
-      const customMarker = this.createCustomMarker(iconUrl, point.type);
-      const marker = L.marker([point.latitude, point.longitude], {
-        icon: customMarker,
-      });
-      const popupContent = `<strong>${point.name}</strong><br/>${point.address}`;
-      marker.bindPopup(popupContent);
-      this.markersClusterGroup.addLayer(marker);
+      const customMarker = this.createCustomMarker(point.type);
+      L.marker([point.latitude, point.longitude], { icon: customMarker })
+        .bindPopup(this.createPopupContent(point))
+        .addTo(this.markersClusterGroup);
     });
   }
 
-  private createCustomMarker(iconUrl: string, pointType: string): L.DivIcon {
-    const pointTypeColors: { [key: string]: string } = {
-      park: 'rgba(23, 160, 10, 0.8)',
-      beach: 'rgba(215, 95, 5, 0.8)',
-      vet: 'rgba(225, 15, 35, 0.8)',
-      fountain: 'rgba(20, 100, 233, 0.8)',
-    };
-    const markerColor = pointTypeColors[pointType] || '#000';
-
+  private createCustomMarker(pointType: string): L.DivIcon {
+    const config = this.pointConfig[pointType as keyof typeof this.pointConfig];
     return L.divIcon({
       className: 'custom-map-marker',
-      html: `<div class="pin" style="background-color: ${markerColor}">
+      html: `<div class="pin" style="background-color: ${config.color}">
                <div class="icon-container">
-                 <img src="${iconUrl}" class="marker-image" />
+                 <img src="${config.iconUrl}" class="marker-image" />
                </div>
              </div>`,
       iconSize: [50, 70],
@@ -153,57 +147,45 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private getIconForPoint(pointType: string): string {
-    switch (pointType) {
-      case 'park':
-        return 'assets/images/dog.png';
-      case 'beach':
-        return 'assets/images/beach.png';
-      case 'vet':
-        return 'assets/images/vet.png';
-      case 'fountain':
-        return 'assets/images/water.png';
-      default:
-        return 'assets/default-icon.png';
-    }
+  private createPopupContent(point: Point): string {
+    return `<strong>${point.name}</strong><br/>${point.address}`;
   }
 
   private getUserLocation(): void {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userCoords = L.latLng(
-            position.coords.latitude,
-            position.coords.longitude
-          );
-
-          const accuracyRadius = Math.min(position.coords.accuracy, 100);
-
-          const accuracyCircle = L.circle(userCoords, {
-            color: '#1E90FF',
-            fillColor: '#1E90FF',
-            fillOpacity: 0.2,
-            radius: accuracyRadius,
-          }).addTo(this.map);
-
-          const exactLocationMarker = L.circleMarker(userCoords, {
-            color: '#FFFFFF',
-            weight: 3,
-            fillColor: '#0000FF',
-            fillOpacity: 1,
-            radius: 8,
-          }).addTo(this.map);
-          // .bindPopup('Tu ubicación actual')
-          // .openPopup();
-
-          // this.map.setView(userCoords, 15);
-        },
-        (error) => {
-          console.error('Error getting location', error);
-        }
-      );
-    } else {
+    if (!navigator.geolocation) {
       console.error('Geolocation is not supported by this browser.');
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => this.addUserLocationMarker(position),
+      (error) => console.error('Error getting location', error)
+    );
+  }
+
+  private addUserLocationMarker(position: GeolocationPosition): void {
+    const userCoords = L.latLng(
+      position.coords.latitude,
+      position.coords.longitude
+    );
+    const accuracyRadius = Math.min(position.coords.accuracy, 100);
+
+    L.circle(userCoords, {
+      color: '#1E90FF',
+      fillColor: '#1E90FF',
+      fillOpacity: 0.2,
+      radius: accuracyRadius,
+    }).addTo(this.map);
+
+    L.circleMarker(userCoords, {
+      color: '#FFFFFF',
+      weight: 3,
+      fillColor: '#0000FF',
+      fillOpacity: 1,
+      radius: 8,
+    }).addTo(this.map);
+    // .bindPopup('Tu ubicación actual')
+    // .openPopup();
+    // this.map.setView(userCoords, 15);
   }
 }

@@ -1,0 +1,28 @@
+@import "variables";
+
+.p-toolbar {
+  background: linear-gradient(180deg, $primary 0%, $secondary 100%);
+  height: $toolbar-height;
+  flex-wrap: nowrap;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 0%;
+
+  .p-toolbar-group-start {
+    cursor: pointer;
+
+    img {
+      height: 45px;
+      padding: 5px 2px 2px 0px;
+    }
+
+    div {
+      color: $white;
+    }
+
+    span {
+      color: $accent;
+    }
+  }
+}

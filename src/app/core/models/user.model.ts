@@ -8,6 +8,6 @@ export interface User {
   role: string;
   createdAt: Date;
   deletedAt: Date;
-  points: Point[];
+  createdPoints: Point[];
   approvedPoints: Point[];
 }

@@ -1,0 +1,29 @@
+@import "variables";
+
+.footer-container {
+  background: linear-gradient(360deg, $primary 0%, $secondary 100%);
+  height: $footer-height;
+
+  &__content {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+
+    &__social {
+      text-decoration: none;
+      color: $light-gray;
+      display: flex;
+
+      i {
+        margin-right: 3px;
+        margin-top: 4px;
+      }
+
+      &:hover {
+        color: $accent;
+      }
+    }
+  }
+}

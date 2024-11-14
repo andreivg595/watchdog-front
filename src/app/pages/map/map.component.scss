@@ -9,6 +9,25 @@
   padding: 10px;
 }
 
+::ng-deep .p-button {
+  background-color: #ffffff;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  color: #000000;
+  font-weight: 500;
+  position: absolute;
+  z-index: 1000;
+  bottom: 0;
+  margin-left: 10px;
+  margin-bottom: 10px;
+  width: 34px;
+  height: 34px;
+
+  &:hover {
+    background-color: #f4f4f4;
+  }
+}
+
 ::ng-deep .leaflet-container {
   height: calc(100vh - #{$toolbar-height});
 }

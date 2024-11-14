@@ -9,11 +9,12 @@ import { fetchPoints } from '../../store/points/point.actions';
 import { getPointsByType } from '../../store/points/point.selectors';
 import { Point } from '../../core/models/point.model';
 import { PointType } from '../../core/enums/point-type.enum';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [LeafletModule],
+  imports: [LeafletModule, ButtonModule],
   templateUrl: './map.component.html',
   styleUrl: './map.component.scss',
 })
@@ -112,6 +113,12 @@ export class MapComponent implements OnInit, OnDestroy {
     this.layersControl.addTo(this.map);
     this.markersClusterGroup.addTo(this.map);
     this.getUserLocation();
+  }
+
+  resetMap() {
+    if (this.map && this.options.center) {
+      this.map.setView(this.options.center, this.options.zoom);
+    }
   }
 
   filterMarkers(type: string) {

@@ -1,20 +1,22 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { LeafletModule } from '@asymmetrik/ngx-leaflet';
 import { select, Store } from '@ngrx/store';
-import { Subject, takeUntil } from 'rxjs';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
+import { ButtonModule } from 'primeng/button';
+import { Subject, takeUntil } from 'rxjs';
+import { PointType } from '../../core/enums/point-type.enum';
+import { Point } from '../../core/models/point.model';
 import { AppState } from '../../store/AppState';
 import { fetchPoints } from '../../store/points/point.actions';
 import { getPointsByType } from '../../store/points/point.selectors';
-import { Point } from '../../core/models/point.model';
-import { PointType } from '../../core/enums/point-type.enum';
-import { ButtonModule } from 'primeng/button';
+import { MenuComponent } from './menu/menu.component';
+import { PointConfig } from '../../core/models/point-config.model';
 
 @Component({
   selector: 'app-map',
   standalone: true,
-  imports: [LeafletModule, ButtonModule],
+  imports: [LeafletModule, ButtonModule, MenuComponent],
   templateUrl: './map.component.html',
   styleUrl: './map.component.scss',
 })
@@ -50,20 +52,15 @@ export class MapComponent implements OnInit, OnDestroy {
 
   readonly coordinatesBCN: L.LatLng = L.latLng(41.3851, 2.1734);
 
-  readonly pointConfig = {
-    park: { color: 'rgba(23, 160, 10, 0.8)', iconUrl: 'assets/images/dog.png' },
-    beach: {
-      color: 'rgba(235, 95, 5, 0.8)',
-      iconUrl: 'assets/images/beach.png',
-    },
-    vet: { color: 'rgba(225, 15, 35, 0.8)', iconUrl: 'assets/images/vet.png' },
-    fountain: {
-      color: 'rgba(20, 100, 233, 0.8)',
-      iconUrl: 'assets/images/water.png',
-    },
-  } as const;
-
   readonly pointType = PointType;
+
+  readonly pointConfig: PointConfig[] = [
+    { type: this.pointType.PARK, color: 'rgba(23, 160, 10, 0.8)', iconUrl: 'assets/images/dog.png' },
+    { type: this.pointType.BEACH, color: 'rgba(235, 95, 5, 0.8)', iconUrl: 'assets/images/beach.png' },
+    { type: this.pointType.VET, color: 'rgba(225, 15, 35, 0.8)', iconUrl: 'assets/images/vet.png' },
+    { type: this.pointType.FOUNTAIN, color: 'rgba(20, 100, 233, 0.8)', iconUrl: 'assets/images/water.png' },
+  ];
+
 
   map!: L.Map;
 
@@ -100,7 +97,7 @@ export class MapComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.store.dispatch(fetchPoints());
-    this.filterMarkers(this.pointType.PARK);
+    this.onFilterMarkers(this.pointType.PARK);
   }
 
   ngOnDestroy(): void {
@@ -116,12 +113,13 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   resetMap() {
+    this.getUserLocation();
     if (this.map && this.options.center) {
       this.map.setView(this.options.center, this.options.zoom);
     }
   }
 
-  filterMarkers(type: string) {
+  onFilterMarkers(type: string) {
     this.markersClusterGroup.clearLayers();
     const points$ = this.store.pipe(
       select(getPointsByType(type)),
@@ -140,12 +138,12 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private createCustomMarker(pointType: string): L.DivIcon {
-    const config = this.pointConfig[pointType as keyof typeof this.pointConfig];
+    const config = this.pointConfig.find(item => item.type === pointType);
     return L.divIcon({
       className: 'custom-map-marker',
-      html: `<div class="pin" style="background-color: ${config.color}">
+      html: `<div class="pin" style="background-color: ${config?.color}">
                <div class="icon-container">
-                 <img src="${config.iconUrl}" class="marker-image" />
+                 <img src="${config?.iconUrl}" class="marker-image" />
                </div>
              </div>`,
       iconSize: [50, 70],
@@ -193,6 +191,6 @@ export class MapComponent implements OnInit, OnDestroy {
     }).addTo(this.map);
     // .bindPopup('Tu ubicación actual')
     // .openPopup();
-    // this.map.setView(userCoords, 15);
+    //this.map.setView(userCoords, this.options.zoom);
   }
 }

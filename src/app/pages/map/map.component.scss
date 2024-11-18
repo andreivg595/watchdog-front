@@ -1,95 +1,119 @@
 @import "variables";
 
-.menu {
-  display: inline-grid;
-  float: left;
-  position: absolute;
-  z-index: 1000;
-  bottom: 0;
-  padding: 10px;
-}
+.map-container {
+  &__option {
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    z-index: 1001;
+    width: 100%;
+    bottom: 0;
+    padding: 10px 10px 10px;
 
-::ng-deep .p-button {
-  background-color: #ffffff;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  color: #000000;
-  font-weight: 500;
-  position: absolute;
-  z-index: 1000;
-  bottom: 0;
-  margin-left: 10px;
-  margin-bottom: 10px;
-  width: 34px;
-  height: 34px;
+    &__reset {
+      ::ng-deep .p-button {
+        background-color: $white;
+        border: 2px solid rgba(0, 0, 0, 0.2);
+        border-radius: 13px;
+        color: #000000;
+        width: 34px;
+        height: 34px; 
+      
+        &:hover {
+          background-color: $white-hover;
+        }
+      }
+    }
 
-  &:hover {
-    background-color: #f4f4f4;
+    @media screen and (max-width: 768px) {
+      &__menu {
+        max-width: 16rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+      }
+
+      &__menu::-webkit-scrollbar {
+        display: none;
+      }
+    }
   }
-}
 
-::ng-deep .leaflet-container {
-  height: calc(100vh - #{$toolbar-height});
-}
-
-::ng-deep .leaflet-right {
-  &:last-child {
-    display: none !important;
+  ::ng-deep .leaflet-container {
+    height: calc(100vh - #{$toolbar-height});
   }
-}
+  
+  ::ng-deep .leaflet-left {
+    &:first-child {
+      display: none !important;
+    }
+  }
 
-::ng-deep .leaflet-popup-content-wrapper {
-  background-color: #333;
-  color: #fff;
-  padding: 10px;
-  border-radius: 8px;
-}
+  ::ng-deep .leaflet-right {
+    &:last-child {
+      display: none !important;
+    }
+  }
 
-::ng-deep .leaflet-popup-tip {
-  background-color: #333;
-}
-
-::ng-deep .cluster-marker .cluster-icon {
-  background-color: rgba(255, 255, 255, 0.7);
-  border: 4px solid rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-  text-align: center;
-  font-size: 16px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-::ng-deep .cluster-marker .cluster-icon span {
-  color: black;
-  font-weight: bold;
-}
-
-::ng-deep .custom-map-marker .pin {
-  position: relative;
-  width: 50px;
-  height: 50px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-}
-
-::ng-deep .custom-map-marker .icon-container {
-  position: absolute;
-  width: 60%;
-  height: 60%;
-  top: 20%;
-  left: 20%;
-  background-color: #ffe4c4;
-  border-radius: 50%;
-  transform: rotate(45deg);
-}
-
-::ng-deep .custom-map-marker .marker-image {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
+  ::ng-deep .leaflet-control-layers {
+    border-radius: 15px;
+  }
+  
+  ::ng-deep .leaflet-popup-content-wrapper {
+    background-color: #333;
+    color: $white;
+    padding: 10px;
+    border-radius: $btn-radius;
+  }
+  
+  ::ng-deep .leaflet-popup-tip {
+    background-color: #333;
+  }
+  
+  ::ng-deep .cluster-marker .cluster-icon {
+    background-color: rgba(255, 255, 255, 0.7);
+    border: 4px solid rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    text-align: center;
+    font-size: 16px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  ::ng-deep .cluster-marker .cluster-icon span {
+    color: black;
+    font-weight: bold;
+  }
+  
+  ::ng-deep .custom-map-marker .pin {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  ::ng-deep .custom-map-marker .icon-container {
+    position: absolute;
+    width: 60%;
+    height: 60%;
+    top: 20%;
+    left: 20%;
+    background-color: #ffe4c4;
+    border-radius: 50%;
+    transform: rotate(45deg);
+  }
+  
+  ::ng-deep .custom-map-marker .marker-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+  }
 }

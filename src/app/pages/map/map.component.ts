@@ -55,12 +55,27 @@ export class MapComponent implements OnInit, OnDestroy {
   readonly pointType = PointType;
 
   readonly pointConfig: PointConfig[] = [
-    { type: this.pointType.PARK, color: 'rgba(23, 160, 10, 0.8)', iconUrl: 'assets/images/dog.png' },
-    { type: this.pointType.BEACH, color: 'rgba(235, 95, 5, 0.8)', iconUrl: 'assets/images/beach.png' },
-    { type: this.pointType.VET, color: 'rgba(225, 15, 35, 0.8)', iconUrl: 'assets/images/vet.png' },
-    { type: this.pointType.FOUNTAIN, color: 'rgba(20, 100, 233, 0.8)', iconUrl: 'assets/images/water.png' },
+    {
+      type: this.pointType.PARK,
+      color: 'rgba(23, 160, 10, 0.8)',
+      iconUrl: 'assets/images/dog.png',
+    },
+    {
+      type: this.pointType.BEACH,
+      color: 'rgba(235, 95, 5, 0.8)',
+      iconUrl: 'assets/images/beach.png',
+    },
+    {
+      type: this.pointType.VET,
+      color: 'rgba(225, 15, 35, 0.8)',
+      iconUrl: 'assets/images/vet.png',
+    },
+    {
+      type: this.pointType.FOUNTAIN,
+      color: 'rgba(20, 100, 233, 0.8)',
+      iconUrl: 'assets/images/water.png',
+    },
   ];
-
 
   map!: L.Map;
 
@@ -138,7 +153,7 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private createCustomMarker(pointType: string): L.DivIcon {
-    const config = this.pointConfig.find(item => item.type === pointType);
+    const config = this.pointConfig.find((item) => item.type === pointType);
     return L.divIcon({
       className: 'custom-map-marker',
       html: `<div class="pin" style="background-color: ${config?.color}">
@@ -153,7 +168,18 @@ export class MapComponent implements OnInit, OnDestroy {
   }
 
   private createPopupContent(point: Point): string {
-    return `<strong>${point.name}</strong><br/>${point.address}`;
+    return `
+      <strong>${point.name}</strong>
+      <br/>
+      ${point.name.includes(point.address) ? '' : point.address}
+      <br/>
+      <a 
+        href="https://www.google.com/maps/search/${point.address}" 
+        target="_blank" 
+        rel="noopener noreferrer">
+        Buscar en maps
+      </a>
+    `;
   }
 
   private getUserLocation(): void {

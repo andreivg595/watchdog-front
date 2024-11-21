@@ -1,5 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { PointConfig } from '../../../core/models/point-config.model';
+import { PointType } from '../../../core/enums/point-type.enum';
 
 @Component({
   selector: 'app-map-menu',
@@ -9,7 +10,9 @@ import { PointConfig } from '../../../core/models/point-config.model';
   styleUrl: './menu.component.scss'
 })
 export class MenuComponent {
-  @Input() options: PointConfig[] = [];
+  readonly options = input<PointConfig[]>();
 
-  @Output() selectedType = new EventEmitter<string>();
+  readonly selectedType = output<string>();
+
+  readonly pointType = PointType;
 }

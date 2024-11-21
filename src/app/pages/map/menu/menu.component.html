@@ -1,8 +1,27 @@
 <div class="menu-container">
-    @for (option of options; track $index) {
-        <div class="menu-container__section" (click)="selectedType.emit(option.type)">
-            <img [src]="option.iconUrl" [alt]="option.type" class="menu-container__section__image" />
-            <span class="menu-container__section__text">{{ option.type }}</span>
-        </div>
+    @for (option of options(); track $index) {
+    <div class="menu-container__section" (click)="selectedType.emit(option.type)">
+        <img
+        [src]="option.iconUrl"
+        [alt]="option.type"
+        class="menu-container__section__image"
+        />
+        <span class="menu-container__section__text">
+        @switch (option.type) { 
+            @case (pointType.PARK) { 
+                Parques 
+            } 
+            @case (pointType.BEACH) { 
+                Playas 
+            } 
+            @case (pointType.VET) { 
+                Veterinarios 
+            } 
+            @case (pointType.FOUNTAIN) { 
+                Fuentes 
+            } 
+        }
+        </span>
+    </div>
     }
 </div>

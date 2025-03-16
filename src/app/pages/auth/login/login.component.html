@@ -1,0 +1,36 @@
+<div class="login-container">
+  <p-card header="¡Haz login y explora!">
+    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+      <p-inputGroup>
+        <p-inputGroupAddon>
+          <i class="pi pi-user"></i>
+        </p-inputGroupAddon>
+        <input
+          pInputText
+          type="text"
+          formControlName="username"
+          placeholder="Username"
+        />
+      </p-inputGroup>
+      <p-inputGroup>
+        <p-inputGroupAddon>
+          <i class="pi pi-lock"></i>
+        </p-inputGroupAddon>
+        <input
+          pInputText
+          type="password"
+          formControlName="password"
+          placeholder="Password"
+        />
+      </p-inputGroup>
+      <p-button
+        type="submit"
+        label="Login"
+        [disabled]="loginForm.invalid"
+      ></p-button>
+    </form>
+    <p class="login-container__link">
+      ¿No tienes cuenta? <a routerLink="/register">Regístrate</a>
+    </p>
+  </p-card>
+</div>

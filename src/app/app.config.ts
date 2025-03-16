@@ -11,9 +11,13 @@ import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 
 import { routes } from './app.routes';
-import { pointReducers } from './store/points/point.reducers';
+import { pointReducer } from './store/points/point.reducers';
 import { PointEffects } from './store/points/point.effects';
 import { PointService } from './core/services/point.service';
+import { LoginEffects } from './store/login/login.effects';
+import { loginReducer } from './store/login/login.reducers';
+import { RegisterEffects } from './store/register/register.effects';
+import { registerReducer } from './store/register/register.reducers';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,8 +25,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(),
     provideAnimationsAsync(),
-    provideStore({ point: pointReducers }),
-    provideEffects([PointEffects]),
+    provideStore({
+      point: pointReducer,
+      login: loginReducer,
+      register: registerReducer,
+    }),
+    provideEffects([PointEffects, LoginEffects, RegisterEffects]),
     provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() }),
     PointService,
   ],

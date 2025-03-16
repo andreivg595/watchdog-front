@@ -17,8 +17,8 @@
         border-radius: 13px;
         color: #000000;
         width: 34px;
-        height: 34px; 
-      
+        height: 34px;
+
         &:hover {
           background-color: $white-hover;
         }
@@ -44,7 +44,7 @@
   ::ng-deep .leaflet-container {
     height: calc(100vh - #{$toolbar-height});
   }
-  
+
   ::ng-deep .leaflet-left {
     &:first-child {
       display: none !important;
@@ -60,18 +60,18 @@
   ::ng-deep .leaflet-control-layers {
     border-radius: 15px;
   }
-  
+
   ::ng-deep .leaflet-popup-content-wrapper {
     background-color: #333;
     color: $white;
     padding: 10px;
     border-radius: $btn-radius;
   }
-  
+
   ::ng-deep .leaflet-popup-tip {
     background-color: #333;
   }
-  
+
   ::ng-deep .cluster-marker .cluster-icon {
     background-color: rgba(255, 255, 255, 0.7);
     border: 4px solid rgba(0, 0, 0, 0.5);
@@ -84,12 +84,12 @@
     justify-content: center;
     align-items: center;
   }
-  
+
   ::ng-deep .cluster-marker .cluster-icon span {
     color: black;
     font-weight: bold;
   }
-  
+
   ::ng-deep .custom-map-marker .pin {
     position: relative;
     width: 50px;
@@ -98,7 +98,7 @@
     transform: rotate(-45deg);
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
   }
-  
+
   ::ng-deep .custom-map-marker .icon-container {
     position: absolute;
     width: 60%;
@@ -109,7 +109,7 @@
     border-radius: 50%;
     transform: rotate(45deg);
   }
-  
+
   ::ng-deep .custom-map-marker .marker-image {
     width: 100%;
     height: 100%;

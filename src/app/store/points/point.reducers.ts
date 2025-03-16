@@ -10,7 +10,7 @@ import { PointType } from '../../core/enums/point-type.enum';
 
 const initialState: PointState = AppInitialState.point;
 
-export const pointReducers = createReducer(
+export const pointReducer = createReducer(
   initialState,
   on(fetchPoints, (state) => ({ ...state, loading: true })),
   on(fetchPointsSuccess, (state, { points }) => ({

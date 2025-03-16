@@ -1,0 +1,58 @@
+<div class="register-container">
+  <p-card header="¡Regístrate junto a tu perro!">
+    <form [formGroup]="registerForm" (ngSubmit)="onRegister()">
+      <p-inputGroup>
+        <p-inputGroupAddon>
+          <i class="pi pi-user"></i>
+        </p-inputGroupAddon>
+        <input
+          pInputText
+          type="text"
+          formControlName="username"
+          placeholder="Username"
+        />
+      </p-inputGroup>
+      <p-inputGroup>
+        <p-inputGroupAddon>
+          <i class="pi pi-envelope"></i>
+        </p-inputGroupAddon>
+        <input
+          pInputText
+          type="email"
+          formControlName="email"
+          placeholder="Email"
+        />
+      </p-inputGroup>
+      <p-inputGroup>
+        <p-inputGroupAddon>
+          <i class="pi pi-lock"></i>
+        </p-inputGroupAddon>
+        <input
+          pInputText
+          type="password"
+          formControlName="password"
+          placeholder="Password"
+        />
+      </p-inputGroup>
+      <p-inputGroup>
+        <p-inputGroupAddon>
+          <i class="pi pi-lock"></i>
+        </p-inputGroupAddon>
+        <input
+          pInputText
+          type="password"
+          formControlName="confirmPassword"
+          placeholder="Confirm password"
+        />
+      </p-inputGroup>
+      <p-button
+        type="submit"
+        label="Enviar"
+        [disabled]="registerForm.invalid"
+      ></p-button>
+    </form>
+    <p class="register-container__link">
+      <a routerLink="/login">Volver al login</a>
+    </p>
+  </p-card>
+</div>

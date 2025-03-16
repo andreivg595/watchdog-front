@@ -4,7 +4,10 @@
       <p-button (click)="resetMap()" icon="pi pi-thumbtack" />
     </div>
     <div class="map-container__option__menu">
-      <app-map-menu [options]="pointConfig" (selectedType)="onFilterMarkers($event)"></app-map-menu>
+      <app-map-menu
+        [options]="pointConfig"
+        (selectedType)="onFilterMarkers($event)"
+      ></app-map-menu>
     </div>
   </div>
   <div

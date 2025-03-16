@@ -3,6 +3,9 @@
 .footer-container {
   background: linear-gradient(360deg, $primary 0%, $secondary 100%);
   height: $footer-height;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
 
   &__content {
     height: 100%;
@@ -13,7 +16,7 @@
 
     &__social {
       text-decoration: none;
-      color: $light-gray;
+      color: $dark-gray;
       display: flex;
 
       i {
